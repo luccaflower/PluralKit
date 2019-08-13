@@ -91,8 +91,6 @@ namespace PluralKit.Bot.Commands
         [Remarks("member <member> description <description>")]
         [MustPassOwnMember]
         public async Task MemberDescription([Remainder] string description = null) {
-            if (description.IsLongerThan(Limits.MaxDescriptionLength)) throw Errors.DescriptionTooLongError(description.Length);
-
             ContextEntity.Description = description;
             await Members.Save(ContextEntity);
 
@@ -104,8 +102,6 @@ namespace PluralKit.Bot.Commands
         [Remarks("member <member> pronouns <pronouns>")]
         [MustPassOwnMember]
         public async Task MemberPronouns([Remainder] string pronouns = null) {
-            if (pronouns.IsLongerThan(Limits.MaxPronounsLength)) throw Errors.MemberPronounsTooLongError(pronouns.Length);
-
             ContextEntity.Pronouns = pronouns;
             await Members.Save(ContextEntity);
 
@@ -119,10 +115,8 @@ namespace PluralKit.Bot.Commands
         public async Task MemberColor([Remainder] string color = null)
         {
             if (color != null)
-            {
-                if (color.StartsWith("#")) color = color.Substring(1);
-                if (!Regex.IsMatch(color, "^[0-9a-fA-F]{6}$")) throw Errors.InvalidColorError(color);
-            }
+                if (color.StartsWith("#"))
+                    color = color.Substring(1);
 
             ContextEntity.Color = color;
             await Members.Save(ContextEntity);
@@ -218,7 +212,11 @@ namespace PluralKit.Bot.Commands
         public async Task MemberAvatar([Remainder] string avatarUrl = null)
         {
             string url = avatarUrl ?? Context.Message.Attachments.FirstOrDefault()?.ProxyUrl;
-            if (url != null) await Context.BusyIndicator(() => Utils.VerifyAvatarOrThrow(url));
+            if (url != null)
+            {
+                if (!BasicValidators.BeValidUrl(url)) throw Errors.InvalidUrl(url);
+                await Context.BusyIndicator(() => Utils.VerifyAvatarOrThrow(url));
+            }
 
             ContextEntity.AvatarUrl = url;
             await Members.Save(ContextEntity);

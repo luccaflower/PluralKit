@@ -66,8 +66,6 @@ namespace PluralKit.Bot.Commands
         [Remarks("system description <description>")]
         [MustHaveSystem]
         public async Task Description([Remainder] string newDescription = null) {
-            if (newDescription != null && newDescription.Length > Limits.MaxDescriptionLength) throw Errors.DescriptionTooLongError(newDescription.Length);
-
             Context.SenderSystem.Description = newDescription;
             await Systems.Save(Context.SenderSystem);
             await Context.Channel.SendMessageAsync($"{Emojis.Success} System description {(newDescription != null ? "changed" : "cleared")}.");
@@ -82,8 +80,6 @@ namespace PluralKit.Bot.Commands
 
             if (newTag != null)
             {
-                if (newTag.Length > Limits.MaxSystemTagLength) throw Errors.SystemNameTooLongError(newTag.Length);
-
                 // Check unproxyable messages *after* changing the tag (so it's seen in the method) but *before* we save to DB (so we can cancel)
                 var unproxyableMembers = await Members.GetUnproxyableMembers(Context.SenderSystem);
                 if (unproxyableMembers.Count > 0)
@@ -124,7 +120,12 @@ namespace PluralKit.Bot.Commands
         public async Task SystemAvatar([Remainder] string avatarUrl = null)
         {
             string url = avatarUrl ?? Context.Message.Attachments.FirstOrDefault()?.ProxyUrl;
-            if (url != null) await Context.BusyIndicator(() => Utils.VerifyAvatarOrThrow(url));
+
+            if (url != null)
+            {
+                if (!BasicValidators.BeValidUrl(url)) throw Errors.InvalidUrl(url);
+                await Context.BusyIndicator(() => Utils.VerifyAvatarOrThrow(url));
+            }
 
             Context.SenderSystem.AvatarUrl = url;
             await Systems.Save(Context.SenderSystem);

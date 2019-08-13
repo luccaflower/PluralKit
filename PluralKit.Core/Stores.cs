@@ -3,7 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using App.Metrics.Logging;
 using Dapper;
+
+using FluentValidation;
+
 using NodaTime;
+
+using PluralKit.Core;
+
 using Serilog;
 
 namespace PluralKit {
@@ -70,6 +76,8 @@ namespace PluralKit {
         }
 
         public async Task Save(PKSystem system) {
+            new SystemValidator().ValidateAndThrow(system);
+            
             using (var conn = await _conn.Obtain())
                 await conn.ExecuteAsync("update systems set name = @Name, description = @Description, tag = @Tag, avatar_url = @AvatarUrl, token = @Token, ui_tz = @UiTz where id = @Id", system);
 
@@ -148,7 +156,10 @@ namespace PluralKit {
                 return await conn.QueryAsync<PKMember>("select * from members where system = @SystemID", new { SystemID = system.Id });
         }
 
-        public async Task Save(PKMember member) {
+        public async Task Save(PKMember member)
+        {
+            new MemberValidator().ValidateAndThrow(member);
+            
             using (var conn = await _conn.Obtain())
                 await conn.ExecuteAsync("update members set name = @Name, display_name = @DisplayName, description = @Description, color = @Color, avatar_url = @AvatarUrl, birthday = @Birthday, pronouns = @Pronouns, prefix = @Prefix, suffix = @Suffix where id = @Id", member);
 
