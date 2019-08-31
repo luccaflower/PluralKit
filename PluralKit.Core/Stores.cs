@@ -444,4 +444,52 @@ namespace PluralKit {
             };
         }
     }
+
+    public class GroupStore
+    {
+        private DbConnectionFactory _conn;
+        private ILogger _logger;
+        
+        public GroupStore(DbConnectionFactory conn, ILogger logger)
+        {
+            _conn = conn;
+            _logger = logger.ForContext<GroupStore>();
+        }
+
+        public async Task<PKGroup> Create(PKSystem system, string name)
+        {
+            string hid;
+            
+            do
+            {
+                hid = Utils.GenerateHid();
+            } while (await GetByHid(hid) != null);
+
+            PKGroup group;
+            using (var conn = await _conn.Obtain())
+                group = await conn.QuerySingleAsync<PKGroup>(
+                    "insert into groups (hid, system, name) values (@Hid, @System, @Name) returning *",
+                    new {Hid = hid, System = system.Id, Name = name});
+            
+            _logger.Information("Created group {Group}", group);
+            return group;
+        }
+
+        public async Task<PKGroup> GetByHid(string hid)
+        {
+            using (var conn = await _conn.Obtain())
+                return await conn.QuerySingleOrDefaultAsync<PKGroup>("select * from groups where hid = @Hid",
+                    new {Hid = hid});
+        }
+
+        public async Task<PKGroup> GetByName(PKSystem system, string name)
+        {
+            using (var conn = await _conn.Obtain())
+                return await conn.QuerySingleOrDefaultAsync<PKGroup>("select * from groups where lower(name) = @Name and system = @System", new
+                {
+                    Name = name.ToLower(),
+                    System = system.Id
+                });
+        }
+    }
 }

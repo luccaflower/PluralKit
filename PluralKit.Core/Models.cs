@@ -78,4 +78,22 @@ namespace PluralKit
         public int Switch { get; set; }
         public int Member { get; set; }
     }
+
+    public class PKGroup
+    {
+        public int Id { get; set; }
+        public string Hid { get; set; }
+        public int Position { get; set; }
+        public int System { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Tag { get; set; }
+        public Instant Timestamp { get; set; }
+    }
+
+    public class PKGroupMember
+    {
+        public int MemberGroup { get; set; }
+        public int Member { get; set; }
+    }
 }
