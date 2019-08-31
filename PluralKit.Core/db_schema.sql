@@ -79,7 +79,8 @@ create table if not exists groups
     name        text           not null,
     description text,
     tag         text,
-    created     timestamp      not null default (current_timestamp at time zone 'utc')
+    created     timestamp      not null default (current_timestamp at time zone 'utc'),
+    unique (system, position)
 );
 
 create table if not exists group_members

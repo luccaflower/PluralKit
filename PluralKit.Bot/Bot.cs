@@ -114,6 +114,7 @@ namespace PluralKit.Bot
             .AddTransient<MemberStore>()
             .AddTransient<MessageStore>()
             .AddTransient<SwitchStore>()
+            .AddTransient<GroupStore>()
 
             .AddSingleton(svc => InitUtils.InitMetrics(svc.GetRequiredService<CoreConfig>()))
             .AddSingleton<PeriodicStatCollector>()
@@ -153,6 +154,7 @@ namespace PluralKit.Bot
         {
             _commands.AddTypeReader<PKSystem>(new PKSystemTypeReader());
             _commands.AddTypeReader<PKMember>(new PKMemberTypeReader());
+            _commands.AddTypeReader<PKGroup>(new PKGroupTypeReader());
             _commands.CommandExecuted += CommandExecuted;
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 

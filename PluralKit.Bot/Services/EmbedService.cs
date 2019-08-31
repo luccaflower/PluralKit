@@ -12,15 +12,17 @@ namespace PluralKit.Bot {
         private MemberStore _members;
         private SwitchStore _switches;
         private MessageStore _messages;
+        private GroupStore _groups;
         private IDiscordClient _client;
 
-        public EmbedService(SystemStore systems, MemberStore members, IDiscordClient client, SwitchStore switches, MessageStore messages)
+        public EmbedService(SystemStore systems, MemberStore members, IDiscordClient client, SwitchStore switches, MessageStore messages, GroupStore groups)
         {
             _systems = systems;
             _members = members;
             _client = client;
             _switches = switches;
             _messages = messages;
+            _groups = groups;
         }
 
         public async Task<Embed> CreateSystemEmbed(PKSystem system) {
@@ -200,6 +202,40 @@ namespace PluralKit.Bot {
             }
 
             return Task.FromResult(eb.Build());
+        }
+
+        public async Task<Embed> CreateGroupEmbed(PKSystem system, PKGroup group)
+        {
+            var name = group.Name;
+            if (system.Name != null) name = $"{group.Name} ({system.Name})";
+
+            var eb = new EmbedBuilder()
+                .WithTitle(name)
+                .WithFooter($"System ID: {system.Hid} | Group ID: {group.Hid}");
+
+            if (group.Tag != null) eb.AddField("Group Tag", group.Tag);
+            if (group.Description != null) eb.AddField("Description", group.Description, false);
+
+            var members = (await _groups.GetMembers(group)).ToList();
+            eb.AddField($"Members ({members.Count})", GenerateMemberListExcerpt(members, $"pk;group {group.Hid} list"));
+            
+            return eb.Build();
+        }
+
+        private string GenerateMemberListExcerpt(ICollection<PKMember> members, string fullListCommand)
+        {
+            int maxCount = 10;
+            if (members.Count == 0) return $"*(none)*";
+            
+            // Alice (abcde), Bob (fghij), Carol (klmno), 97 more (`pk;whatever qwert list`)
+            var membersText = string.Join(", ", members.Select(m => $"{m.Name} (`{m.Hid}`)").Take(10));
+            if (members.Count > maxCount)
+            {
+                var membersListEllipsis = $", {members.Count - maxCount} more (`{fullListCommand}`)";
+                return membersText.Truncate(membersText.Length - membersListEllipsis.Length) + membersListEllipsis;
+            }
+
+            return membersText;
         }
     }
 }

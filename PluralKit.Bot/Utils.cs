@@ -173,6 +173,28 @@ namespace PluralKit.Bot
             return TypeReaderResult.FromError(CommandError.ObjectNotFound, $"Member with ID `{input}` not found.");
         }
     }
+    
+    class PKGroupTypeReader: TypeReader
+    {
+        public override async Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
+        {
+            var groups = services.GetRequiredService<GroupStore>();
+            
+            // If the sender of the command is in a system themselves,
+            // then try searching by the group's name
+            if (context is PKCommandContext ctx && ctx.SenderSystem != null)
+            {
+                var foundByName = await groups.GetByName(ctx.SenderSystem, input);
+                if (foundByName != null) return TypeReaderResult.FromSuccess(foundByName);
+            }
+
+            // Otherwise, if sender isn't in a system, or no group found by that name,
+            // do a standard by-hid search.
+            var foundByHid = await groups.GetByHid(input);
+            if (foundByHid != null) return TypeReaderResult.FromSuccess(foundByHid);
+            return TypeReaderResult.FromError(CommandError.ObjectNotFound, $"Group with ID `{input}` not found.");
+        }
+    }
 
     /// Subclass of ICommandContext with PK-specific additional fields and functionality
     public class PKCommandContext : ShardedCommandContext

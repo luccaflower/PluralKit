@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -468,7 +469,7 @@ namespace PluralKit {
             PKGroup group;
             using (var conn = await _conn.Obtain())
                 group = await conn.QuerySingleAsync<PKGroup>(
-                    "insert into groups (hid, system, name) values (@Hid, @System, @Name) returning *",
+                    "insert into groups (hid, system, name, position) values (@Hid, @System, @Name, (select count(id) from groups where system = @System)) returning *",
                     new {Hid = hid, System = system.Id, Name = name});
             
             _logger.Information("Created group {Group}", group);
@@ -490,6 +491,51 @@ namespace PluralKit {
                     Name = name.ToLower(),
                     System = system.Id
                 });
+        }
+
+        public async Task<IEnumerable<PKMember>> GetMembers(PKGroup group)
+        {
+            using (var conn = await _conn.Obtain())
+                return await conn.QueryAsync<PKMember>("select * from members, group_members where group_members.member = members.id and group_members.member_group = @Id", group);
+        }
+
+        public async Task AddMember(PKGroup group, PKMember member)
+        {
+            if (member.System != group.System)
+                throw new ArgumentException($"Attempted to add member {member.Id} to group {group.Id}, but their system IDs don't match ({group.System} != {member.System})");
+
+            using (var conn = await _conn.Obtain())
+                await conn.ExecuteAsync("insert into group_members(member_group, member) values (@Group, @Member)",
+                    new {Group = group.Id, Member = member.Id});
+            _logger.Information("Added member {Member} to group {Group}", member.Id, group.Id);
+        }
+
+        public async Task<bool> RemoveMember(PKGroup group, PKMember member)
+        {
+            if (member.System != group.System)
+                throw new ArgumentException($"Attempted to remove member {member.Id} from group {group.Id}, but their system IDs don't match ({group.System} != {member.System})");
+
+            int deletedRows;
+            using (var conn = await _conn.Obtain())
+                deletedRows = await conn.ExecuteAsync("delete from group_members where member_group = @Group and member = @Member",
+                    new {Group = group.Id, Member = member.Id});
+            
+            _logger.Information("Removed member {Member} from group {Group}", member.Id, group.Id);
+            return deletedRows > 0;
+        }
+
+        public async Task Save(PKGroup group)
+        {
+            using (var conn = await _conn.Obtain())
+                await conn.ExecuteAsync("update groups set position = @Position, name = @Name, description = @Description, tag = @Tag where id = @Id", group);
+            _logger.Information("Updated group {Group}", group);
+        }
+
+        public async Task Delete(PKGroup group)
+        {
+            using (var conn = await _conn.Obtain())
+                await conn.ExecuteAsync("delete from groups where id = @Id", group);
+            _logger.Information("Deleted group {Group}", group.Id);
         }
     }
 }
