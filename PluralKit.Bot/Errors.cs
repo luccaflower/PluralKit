@@ -12,9 +12,11 @@ namespace PluralKit.Bot {
 
         public static PKError NotOwnSystemError => new PKError($"You can only run this command on your own system.");
         public static PKError NotOwnMemberError => new PKError($"You can only run this command on your own member.");
+        public static PKError NotOwnGroupError => new PKError($"You can only run this command on your own group.");
         public static PKError NoSystemError => new PKError("You do not have a system registered with PluralKit. To create one, type `pk;system new`.");
         public static PKError ExistingSystemError => new PKError("You already have a system registered with PluralKit. To view it, type `pk;system`. If you'd like to delete your system and start anew, type `pk;system delete`, or if you'd like to unlink this account from it, type `pk;unlink`.");
         public static PKError MissingMemberError => new PKSyntaxError("You need to specify a member to run this command on.");
+        public static PKError MissingGroupError => new PKSyntaxError("You need to specify a group to run this command on.");
 
         public static PKError SystemNameTooLongError(int length) => new PKError($"System name too long ({length}/{Limits.MaxSystemNameLength} characters).");
         public static PKError SystemTagTooLongError(int length) => new PKError($"System tag too long ({length}/{Limits.MaxSystemTagLength} characters).");
@@ -28,6 +30,7 @@ namespace PluralKit.Bot {
         public static PKError ProxyMultipleText => new PKSyntaxError("Example proxy message must contain the string 'text' exactly once.");
         
         public static PKError MemberDeleteCancelled => new PKError($"Member deletion cancelled. Stay safe! {Emojis.ThumbsUp}");
+        public static PKError GroupDeleteCancelled => new PKError($"Group deletion cancelled. Stay safe! {Emojis.ThumbsUp}");
         public static PKError AvatarServerError(HttpStatusCode statusCode) => new PKError($"Server responded with status code {(int) statusCode}, are you sure your link is working?");
         public static PKError AvatarFileSizeLimit(long size) => new PKError($"File size too large ({size.Bytes().ToString("#.#")} > {Limits.AvatarFileSizeLimit.Bytes().ToString("#.#")}), try shrinking or compressing the image.");
         public static PKError AvatarNotAnImage(string mimeType) => new PKError($"The given link does not point to an image{(mimeType != null ? $" ({mimeType.Sanitize()})" : "")}. Make sure you're using a direct link (ending in .jpg, .png, .gif).");
@@ -78,5 +81,9 @@ namespace PluralKit.Bot {
             $"Display name too long ({displayName.Length} > {maxLength} characters). Use a shorter display name, or shorten your system tag.");
         public static PKError ProxyNameTooShort(string name) => new PKError($"The webhook's name, `{name}`, is shorter than two characters, and thus cannot be proxied. Please change the member name or use a longer system tag.");
         public static PKError ProxyNameTooLong(string name) => new PKError($"The webhook's name, `{name}`, is too long ({name.Length} > {Limits.MaxProxyNameLength} characters), and thus cannot be proxied. Please change the member name or use a shorter system tag.");
+
+        public static PKError MemberNotInOwnSystem => new PKError($"This member is not in your own system.");
+        public static PKError MemberAlreadyInGroup(PKGroup group) => new PKError($"This member is already in the group \"{group.Name.Sanitize()}\".");
+        public static PKError MemberNotInGroup(PKGroup group) => new PKError($"This member is not in the group \"{group.Name.Sanitize()}\".");
     }
 }

@@ -30,4 +30,21 @@ namespace PluralKit.Bot {
             return Task.FromResult(PreconditionResult.FromSuccess());
         }
     }
+    
+    class MustPassOwnGroup : PreconditionAttribute
+    {
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        {
+            // OK when:
+            // - Sender has a system
+            // - Sender passes a group as a context parameter
+            // - Sender owns said group 
+
+            var c = context as PKCommandContext;
+            if (c.SenderSystem == null) return Task.FromResult(PreconditionResult.FromError(Errors.NoSystemError));
+            if (c.GetContextEntity<PKGroup>() == null) return Task.FromResult(PreconditionResult.FromError(Errors.MissingGroupError));
+            if (c.GetContextEntity<PKGroup>().System != c.SenderSystem.Id) return Task.FromResult(PreconditionResult.FromError(Errors.NotOwnGroupError));
+            return Task.FromResult(PreconditionResult.FromSuccess());
+        }
+    }
 }

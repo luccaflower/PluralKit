@@ -178,6 +178,12 @@ namespace PluralKit {
                 return await conn.ExecuteScalarAsync<int>("select count(*) from members where system = @Id", system);
         }
 
+        public async Task<IEnumerable<PKGroup>> GetGroups(PKMember member)
+        {
+            using (var conn = await _conn.Obtain())
+                return await conn.QueryAsync<PKGroup>("select * from groups, group_members where groups.id = group_members.member_group and group_members.member = @Id", member);
+        }
+
         public async Task<ulong> Count()
         {
             using (var conn = await _conn.Obtain())
