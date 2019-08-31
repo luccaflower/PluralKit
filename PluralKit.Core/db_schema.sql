@@ -69,3 +69,22 @@ create table if not exists servers
     id          bigint primary key,
     log_channel bigint
 );
+
+create table if not exists groups
+(
+    id          serial primary key,
+    hid         char(5) unique not null,
+    position    int            not null,
+    system      serial         not null references systems (id) on delete cascade,
+    name        text           not null,
+    description text           not null,
+    tag         text,
+    created     timestamp      not null default (current_timestamp at time zone 'utc')
+);
+
+create table if not exists group_members
+(
+    member_group serial not null references groups (id) on delete cascade,
+    member serial not null references members (id) on delete cascade,
+    primary key (member_group, member)
+);
