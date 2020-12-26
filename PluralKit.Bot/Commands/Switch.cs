@@ -60,6 +60,15 @@ namespace PluralKit.Bot
                 await ctx.Reply($"{Emojis.Success} Switch-out registered.");
             else
                 await ctx.Reply($"{Emojis.Success} Switch registered. Current fronter is now {string.Join(", ", members.Select(m => m.NameFor(ctx)))}.");
+
+            foreach (PKMember m in members) 
+            {
+                var reminders = await _repo.GetUnseenRemindersAndUpdate(conn, m);
+                if (reminders != null) 
+                {
+                    await ctx.Reply($"{Emojis.Bell} {m.Name} has {reminders.Count} new reminders.");
+                }
+            }
         }
         
         public async Task SwitchMove(Context ctx)
