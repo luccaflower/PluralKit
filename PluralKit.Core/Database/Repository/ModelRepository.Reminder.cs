@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PluralKit.Core
 {
+    //TODO: Method to mark reminders as unseen
     public partial class ModelRepository
     {
         public async Task AddReminder(IPKConnection conn, PKReminder reminder) 
@@ -15,17 +16,25 @@ namespace PluralKit.Core
             _logger.Debug("Added reminder for {@Receiver}", reminder.Receiver);
         }
 
-        public async Task<List<PKReminder>> GetUnseenRemindersAndUpdate(IPKConnection conn, PKMember member) 
+        public IAsyncEnumerable<PKReminder> GetUnseenReminders(IPKConnection conn, PKMember member) 
         {
-            var results = await conn.QueryAsync<PKReminder>(@"
+            return conn.QueryStreamAsync<PKReminder>(@"
 UPDATE reminders
 SET seen = true
 WHERE receiver = @Id AND seen = false
-RETURNING *", member);
-            return results.ToList();
+RETURNING *"
+            , member);
         }
 
-
+        public IAsyncEnumerable<PKReminder> GetReminders(IPKConnection conn, PKMember member)
+        {
+            return conn.QueryStreamAsync<PKReminder>(@"
+UPDATE reminders
+SET seen = true
+WHERE receiver = @Id
+RETURNING *"
+            , member);
+        }
     }
 
     public class PKReminder {
