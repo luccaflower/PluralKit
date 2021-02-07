@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -165,6 +166,24 @@ namespace PluralKit.Bot
                     eb.AddField(m.NameFor(ctx), profile.ToString().Truncate(1024));
                 }
             }
+        }
+
+        public static async Task RenderReminderList(this Context ctx, LookupContext lookupCtx, IDatabase db, MemberId member, string embedTitle, bool showSeen)
+        {
+            Console.WriteLine("Member: " + member.Value);
+            var reminders = await db.Execute(conn => showSeen ? conn.QueryReminders(member) : conn.QueryUnseenReminders(member)).ToListAsync();
+            var itemsPerPage = 25;
+
+            await ctx.Paginate(reminders.ToAsyncEnumerable(), reminders.Count, itemsPerPage, embedTitle, (eb, page) =>
+            {
+                eb.WithFooter("result".ToQuantity(reminders.Count));
+                eb.WithSimpleLineContent(page.Select(r =>
+                {
+                    string emoji = !r.Seen ? Emojis.Success : "";
+                    return $"[Go to...](https://discord.com/channels/{r.Guild}/{r.Channel}/{r.Mid}) | {emoji}";
+                }));
+                return Task.CompletedTask;
+            });
         }
     }
 }

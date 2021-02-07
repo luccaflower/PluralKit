@@ -16,25 +16,6 @@ namespace PluralKit.Core
             _logger.Debug("Added reminder for {@Receiver}", reminder.Receiver);
         }
 
-        public IAsyncEnumerable<PKReminder> GetUnseenReminders(IPKConnection conn, PKMember member) 
-        {
-            return conn.QueryStreamAsync<PKReminder>(@"
-UPDATE reminders
-SET seen = true
-WHERE receiver = @Id AND seen = false
-RETURNING *"
-            , member);
-        }
-
-        public IAsyncEnumerable<PKReminder> GetReminders(IPKConnection conn, PKMember member)
-        {
-            return conn.QueryStreamAsync<PKReminder>(@"
-UPDATE reminders
-SET seen = true
-WHERE receiver = @Id
-RETURNING *"
-            , member);
-        }
     }
 
     public class PKReminder {

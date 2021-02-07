@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,8 +43,24 @@ namespace PluralKit.Core
             }
             
             return conn.QueryAsync<ListedMember>(query.ToString(), new {system, filter = opts.Search, groupFilter = opts.GroupFilter});
+
         }
         
+        //r1 and r2 are needed in order to return the "seen" value before it's updated
+        public static IAsyncEnumerable<PKReminder> QueryUnseenReminders(this IPKConnection conn, MemberId member) => conn.QueryStreamAsync<PKReminder>(@"
+UPDATE reminders r1
+SET seen = true
+FROM (SELECT mid, channel, guild, receiver, seen FROM reminders WHERE receiver = @Id AND seen = false) r2
+WHERE r1.mid = r2.mid
+RETURNING r2.*", new { Id = member.Value });
+
+        public static IAsyncEnumerable<PKReminder> QueryReminders(this IPKConnection conn, MemberId member) => conn.QueryStreamAsync<PKReminder>(@"
+UPDATE reminders r1
+SET seen = true
+FROM (SELECT mid, channel, guild, receiver, seen FROM reminders WHERE receiver = @Id) r2
+WHERE r1.mid = r2.mid
+RETURNING r2.*", new { Id = member.Value });
+
         public struct MemberListQueryOptions
         {
             public PrivacyLevel? PrivacyFilter;
