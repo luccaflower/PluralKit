@@ -77,7 +77,7 @@ namespace PluralKit.Bot
         public async Task AddReminder(Context ctx, PKMember target) 
         {
             await using var conn = await _db.Obtain();
-            await _repo.AddReminder(conn, new PKReminder { Mid = ctx.Message.Id, Channel = ctx.Channel.Id, Guild = ctx.Guild.Id, Receiver = target.Id, Seen = false });
+            await _repo.AddReminder(conn, new PKReminder { Mid = ctx.Message.Id, Channel = ctx.Channel.Id, Guild = ctx.Guild.Id, Member = target.Id, System = target.System, Seen = false });
             await ctx.Reply($"Added new reminder for {target.Name}");
         }
 

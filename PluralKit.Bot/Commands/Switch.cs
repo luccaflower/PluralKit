@@ -62,15 +62,10 @@ namespace PluralKit.Bot
             //TODO: Move to its own method
             //TODO: Get unseen reminders on message proxy
             //TODO: Make it possible to mark last seen reminders as unseen
-            /*foreach (PKMember m in members) 
+            foreach (PKMember m in members) 
             {
-                var reminders =  await _repo.GetUnseenReminders(conn, m).ToListAsync();
-                if (reminders.Count != 0) 
-                {
-                    await ctx.Reply($"{Emojis.Bell} {m.Name} has {reminders.Count} new reminders.");
-                    
-                }
-            }*/
+                await ctx.RenderReminderList(ctx.LookupContextFor(m), _db, m.Id, $"New reminders for {m.Name}", false);
+            }
         }
         
         public async Task SwitchMove(Context ctx)

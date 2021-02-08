@@ -179,8 +179,8 @@ namespace PluralKit.Bot
                 eb.Footer(new("result".ToQuantity(reminders.Count)));
                 eb.WithSimpleLineContent(page.Select(r =>
                 {
-                    string emoji = !r.Seen ? Emojis.Success : "";
-                    return $"[Go to...](https://discord.com/channels/{r.Guild}/{r.Channel}/{r.Mid}) | {emoji}";
+                    string emoji = !r.Seen ? Emojis.New : "";
+                    return $"[Go to {Emojis.RightArrow}](https://discord.com/channels/{r.Guild}/{r.Channel}/{r.Mid}) | {r.Timestamp.FormatZoned(ctx.System.Zone)} {emoji}";
                 }));
                 return Task.CompletedTask;
             });

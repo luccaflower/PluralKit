@@ -1,4 +1,5 @@
 using Dapper;
+using NodaTime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,7 @@ namespace PluralKit.Core
     {
         public async Task AddReminder(IPKConnection conn, PKReminder reminder) 
         {
-            await conn.ExecuteAsync("insert into reminders(mid, channel, guild, receiver, seen) values (@Mid, @Channel, @Guild, @Receiver, @Seen)", reminder);
-            _logger.Debug("Added reminder for {@Receiver}", reminder.Receiver);
+            await conn.ExecuteAsync("insert into reminders(mid, channel, guild, member, system, seen) values (@Mid, @Channel, @Guild, @Member, @System, @Seen)", reminder);
         }
 
     }
@@ -22,7 +22,9 @@ namespace PluralKit.Core
         public ulong Mid { get; set; }
         public ulong Channel { get; set; }
         public ulong Guild { get; set; }
-        public MemberId Receiver { get; set; }
+        public MemberId Member { get; set; }
+        public SystemId System { get; set; }
         public bool Seen { get; set; }
+        public Instant Timestamp { get; set; }
     }
 }
