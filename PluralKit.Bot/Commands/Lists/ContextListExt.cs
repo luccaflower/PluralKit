@@ -176,7 +176,7 @@ namespace PluralKit.Bot
 
             await ctx.Paginate(reminders.ToAsyncEnumerable(), reminders.Count, itemsPerPage, embedTitle, (eb, page) =>
             {
-                eb.WithFooter("result".ToQuantity(reminders.Count));
+                eb.Footer(new("result".ToQuantity(reminders.Count)));
                 eb.WithSimpleLineContent(page.Select(r =>
                 {
                     string emoji = !r.Seen ? Emojis.Success : "";
