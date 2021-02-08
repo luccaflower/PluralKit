@@ -74,6 +74,20 @@ namespace PluralKit.Bot
             await ctx.Reply(embed: await _embeds.CreateMemberEmbed(system, target, ctx.Guild, ctx.LookupContextFor(system)));
         }
 
+        public async Task AddReminder(Context ctx, PKMember target) 
+        {
+            await using var conn = await _db.Obtain();
+            await _repo.AddReminder(conn, new PKReminder { Mid = ctx.Message.Id, Channel = ctx.Channel.Id, Guild = ctx.Guild.Id, Receiver = target.Id, Seen = false });
+            await ctx.Reply($"Added new reminder for {target.Name}");
+        }
+
+        public async Task GetReminders(Context ctx, PKMember target) => await ctx.RenderReminderList(
+            ctx.LookupContextFor(target),
+            _db,
+            target.Id,
+            $"Reminders for {target.Name}",
+            true);
+
         public async Task Soulscream(Context ctx, PKMember target)
         {
             // this is for a meme, please don't take this code seriously. :)

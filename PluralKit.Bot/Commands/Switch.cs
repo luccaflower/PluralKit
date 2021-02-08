@@ -58,6 +58,19 @@ namespace PluralKit.Bot
                 await ctx.Reply($"{Emojis.Success} Switch-out registered.");
             else
                 await ctx.Reply($"{Emojis.Success} Switch registered. Current fronter is now {string.Join(", ", members.Select(m => m.NameFor(ctx)))}.");
+
+            //TODO: Move to its own method
+            //TODO: Get unseen reminders on message proxy
+            //TODO: Make it possible to mark last seen reminders as unseen
+            /*foreach (PKMember m in members) 
+            {
+                var reminders =  await _repo.GetUnseenReminders(conn, m).ToListAsync();
+                if (reminders.Count != 0) 
+                {
+                    await ctx.Reply($"{Emojis.Bell} {m.Name} has {reminders.Count} new reminders.");
+                    
+                }
+            }*/
         }
         
         public async Task SwitchMove(Context ctx)
