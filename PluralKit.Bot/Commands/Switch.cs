@@ -64,7 +64,7 @@ namespace PluralKit.Bot
             //TODO: Make it possible to mark last seen reminders as unseen
             foreach (PKMember m in members) 
             {
-                await ctx.RenderReminderList(ctx.LookupContextFor(m), _db, m.Id, $"New reminders for {m.Name}", false);
+                await ctx.RenderReminderList(_db, m.Id, $"New reminders for {m.Name}", false);
             }
         }
         
