@@ -168,7 +168,7 @@ namespace PluralKit.Bot
             }
         }
 
-        public static async Task RenderReminderList(this Context ctx, LookupContext lookupCtx, IDatabase db, MemberId member, string embedTitle, bool showSeen)
+        public static async Task RenderReminderList(this Context ctx, IDatabase db, MemberId member, string embedTitle, bool showSeen)
         {
             Console.WriteLine("Member: " + member.Value);
             var reminders = await db.Execute(conn => showSeen ? conn.QueryReminders(member) : conn.QueryUnseenReminders(member)).ToListAsync();
@@ -180,7 +180,7 @@ namespace PluralKit.Bot
                 eb.WithSimpleLineContent(page.Select(r =>
                 {
                     string emoji = !r.Seen ? Emojis.New : "";
-                    return $"[Go to {Emojis.RightArrow}](https://discord.com/channels/{r.Guild}/{r.Channel}/{r.Mid}) | {r.Timestamp.FormatZoned(ctx.System.Zone)} {emoji}";
+                    return $"[Click to see message {Emojis.RightArrow}](https://discord.com/channels/{r.Guild}/{r.Channel}/{r.Mid}) | {r.Timestamp.FormatZoned(ctx.System.Zone)} {emoji}";
                 }));
                 return Task.CompletedTask;
             });
