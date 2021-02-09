@@ -84,7 +84,7 @@ namespace PluralKit.Bot
             }
             else
             {
-                await ctx.Reply($"{Emojis.Error} Error: You can only send reminders to your own system.");
+                await ctx.Reply($"{Emojis.Error} You can only send reminders to your own system.");
             }
         }
 
