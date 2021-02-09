@@ -76,9 +76,16 @@ namespace PluralKit.Bot
 
         public async Task AddReminder(Context ctx, PKMember target) 
         {
-            await using var conn = await _db.Obtain();
-            await _repo.AddReminder(conn, new PKReminder { Mid = ctx.Message.Id, Channel = ctx.Channel.Id, Guild = ctx.Guild.Id, Member = target.Id, System = target.System, Seen = false });
-            await ctx.Reply($"Added new reminder for {target.Name}");
+            if (ctx.System?.Id == target.System)
+            {
+                await using var conn = await _db.Obtain();
+                await _repo.AddReminder(conn, new PKReminder { Mid = ctx.Message.Id, Channel = ctx.Channel.Id, Guild = ctx.Guild.Id, Member = target.Id, System = target.System, Seen = false });
+                await ctx.Reply($"Added new reminder for {target.Name}");
+            }
+            else
+            {
+                await ctx.Reply($"{Emojis.Error} Error: You can only send reminders to your own system.");
+            }
         }
 
         public async Task GetReminders(Context ctx, PKMember target) => await ctx.RenderReminderList(
