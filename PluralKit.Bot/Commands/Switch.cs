@@ -59,9 +59,7 @@ namespace PluralKit.Bot
             else
                 await ctx.Reply($"{Emojis.Success} Switch registered. Current fronter is now {string.Join(", ", members.Select(m => m.NameFor(ctx)))}.");
 
-            //TODO: Move to its own method
-            //TODO: Get unseen reminders on message proxy
-            //TODO: Make it possible to mark last seen reminders as unseen
+
             foreach (PKMember m in members) 
             {
                 await ctx.RenderReminderList(_db, m.Id, $"New reminders for {m.Name}", false);
