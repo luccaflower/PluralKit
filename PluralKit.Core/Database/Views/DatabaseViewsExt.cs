@@ -60,6 +60,20 @@ SELECT * FROM x ORDER BY timestamp DESC";
             return conn.QueryStreamAsync<PKReminder>(query, new { Id = member.Value });
         }
 
+        public static IAsyncEnumerable<PKReminder> QuerySystemReminders(this IPKConnection conn, SystemId system, bool seen = true, bool targeted = false) {
+            var showSeen = seen ? "" : "AND seen = false";
+            var showTargeted = targeted ? "" : "AND member is NULL";
+            var query = @$"
+WITH x AS (
+    UPDATE reminders r1
+    SET seen = true
+    FROM (SELECT mid, channel, guild, member, system, seen, timestamp FROM reminders WHERE system = @Id {showTargeted} {showSeen}) r2
+    WHERE r1.mid = r2.mid
+    RETURNING r2.*
+)
+SELECT * FROM x ORDER BY timestamp DESC";
+            return conn.QueryStreamAsync<PKReminder>(query, new { Id = system.Value });
+        }
 
         public struct MemberListQueryOptions
         {
