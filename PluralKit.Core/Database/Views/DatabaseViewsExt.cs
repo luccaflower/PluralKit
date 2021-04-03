@@ -45,40 +45,12 @@ namespace PluralKit.Core
             return conn.QueryAsync<ListedMember>(query.ToString(), new {system, filter = opts.Search, groupFilter = opts.GroupFilter});
         }
 
-        //r1 and r2 are needed in order to return the "seen" value before it's updated
-        public static IAsyncEnumerable<PKReminder> QueryMemberReminders(this IPKConnection conn, MemberId member, bool seen = true) {
-            var showSeen = seen ? "" : "AND seen = false";
-            var query = @$"
-WITH x AS (
-    UPDATE reminders r1
-    SET seen = true
-    FROM (SELECT mid, channel, guild, member, system, seen, timestamp FROM reminders WHERE member = @Id {showSeen}) r2
-    WHERE r1.mid = r2.mid
-    RETURNING r2.*
-)
-SELECT * FROM x ORDER BY timestamp DESC";
-            return conn.QueryStreamAsync<PKReminder>(query, new { Id = member.Value });
-        }
-
-        public static IAsyncEnumerable<PKReminder> QuerySystemReminders(this IPKConnection conn, SystemId system, bool seen = true, bool targeted = false) {
-            var showSeen = seen ? "" : "AND seen = false";
-            var showTargeted = targeted ? "" : "AND member is NULL";
-            var query = @$"
-WITH x AS (
-    UPDATE reminders r1
-    SET seen = true
-    FROM (SELECT mid, channel, guild, member, system, seen, timestamp FROM reminders WHERE system = @Id {showTargeted} {showSeen}) r2
-    WHERE r1.mid = r2.mid
-    RETURNING r2.*
-)
-SELECT * FROM x ORDER BY timestamp DESC";
-            return conn.QueryStreamAsync<PKReminder>(query, new { Id = system.Value });
-        }
-
-        public static IAsyncEnumerable<PKReminder> QueryReminders(this IPKConnection conn, PKSystem system, bool seen = true, MemberId? memberId = null) {
+        public static IAsyncEnumerable<PKReminder> QueryReminders(this IPKConnection conn, PKSystem system, MemberId? memberId = null, bool seen = true) {
             var showSeen = seen ? "" : "AND seen = false";
             var memberOrSystem = memberId is null ? "system = @Id AND member is null" : "member = @Id";
             var queryParameter = memberId is null ? new { Id = system.Id.Value } : new { Id = ((MemberId)memberId).Value };
+            
+            //r1 and r2 are needed in order to return the "seen" value before it's updated
             var query = @$"
 WITH x AS (
     UPDATE reminders r1

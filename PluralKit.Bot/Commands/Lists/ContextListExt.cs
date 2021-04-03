@@ -175,7 +175,7 @@ namespace PluralKit.Bot
             bool showSeen) 
         {
             var reminders = await db.Execute(
-                conn => showSeen ? conn.QueryMemberReminders(member) : conn.QueryMemberReminders(member, false))
+                conn => showSeen ? conn.QueryReminders(ctx.System, member) : conn.QueryReminders(ctx.System, member, false))
                 .ToListAsync();
             
             var itemsPerPage = 25;
@@ -203,7 +203,7 @@ namespace PluralKit.Bot
             bool showSeen) 
         {
             var reminders = await db.Execute(conn => 
-                showSeen ? conn.QueryReminders(ctx.System) : conn.QueryReminders(ctx.System, false))
+                showSeen ? conn.QueryReminders(ctx.System) : conn.QueryReminders(ctx.System, seen: false))
                 .ToListAsync();
 
             var itemsPerPage = 25;
