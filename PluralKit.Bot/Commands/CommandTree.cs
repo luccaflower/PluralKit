@@ -255,6 +255,8 @@ namespace PluralKit.Bot
                 await ctx.Execute<SystemEdit>(SystemPing, m => m.SystemPing(ctx));
             else if (ctx.Match("remind"))
                 await ctx.Execute<SystemRemind>(SystemRemindNew, m => m.AddReminder(ctx));
+            else if (ctx.Match("reminders"))
+                await ctx.Execute<SystemRemind>(SystemReminders, m => m.GetReminders(ctx));
             else if (ctx.Match("commands", "help"))
                 await PrintCommandList(ctx, "systems", SystemCommands);
             else if (ctx.Match("groups", "gs", "g"))

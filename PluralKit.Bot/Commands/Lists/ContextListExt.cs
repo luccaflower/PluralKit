@@ -175,7 +175,7 @@ namespace PluralKit.Bot
             bool showSeen) 
         {
             var reminders = await db.Execute(
-                conn => showSeen ? conn.QueryReminders(member) : conn.QueryReminders(member, false))
+                conn => showSeen ? conn.QueryMemberReminders(member) : conn.QueryMemberReminders(member, false))
                 .ToListAsync();
             
             var itemsPerPage = 25;
@@ -198,13 +198,12 @@ namespace PluralKit.Bot
         public static async Task RenderSystemReminderList(
             this Context ctx, 
             IDatabase db, 
-            SystemId system, 
             string embedTitle, 
             string color, 
             bool showSeen) 
         {
             var reminders = await db.Execute(conn => 
-                showSeen ? conn.QuerySystemReminders(system) : conn.QuerySystemReminders(system, false))
+                showSeen ? conn.QueryReminders(ctx.System) : conn.QueryReminders(ctx.System, false))
                 .ToListAsync();
 
             var itemsPerPage = 25;
@@ -224,7 +223,12 @@ namespace PluralKit.Bot
             }
         }
 
-        private static void RenderReminderListPage(int count, IEnumerable<PKReminder> page, EmbedBuilder eb, DateTimeZone tz) {
+        private static void RenderReminderListPage(
+            int count, 
+            IEnumerable<PKReminder> page, 
+            EmbedBuilder eb, 
+            DateTimeZone tz) 
+        {
             eb.Footer(new("result".ToQuantity(count)));
             eb.WithSimpleLineContent(
                 page.Select(r => {

@@ -46,7 +46,7 @@ namespace PluralKit.Core
         }
 
         //r1 and r2 are needed in order to return the "seen" value before it's updated
-        public static IAsyncEnumerable<PKReminder> QueryReminders(this IPKConnection conn, MemberId member, bool seen = true) {
+        public static IAsyncEnumerable<PKReminder> QueryMemberReminders(this IPKConnection conn, MemberId member, bool seen = true) {
             var showSeen = seen ? "" : "AND seen = false";
             var query = @$"
 WITH x AS (
@@ -73,6 +73,22 @@ WITH x AS (
 )
 SELECT * FROM x ORDER BY timestamp DESC";
             return conn.QueryStreamAsync<PKReminder>(query, new { Id = system.Value });
+        }
+
+        public static IAsyncEnumerable<PKReminder> QueryReminders(this IPKConnection conn, PKSystem system, bool seen = true, MemberId? memberId = null) {
+            var showSeen = seen ? "" : "AND seen = false";
+            var memberOrSystem = memberId is null ? "system = @Id AND member is null" : "member = @Id";
+            var queryParameter = memberId is null ? new { Id = system.Id.Value } : new { Id = ((MemberId)memberId).Value };
+            var query = @$"
+WITH x AS (
+    UPDATE reminders r1
+    SET seen = true
+    FROM (SELECT mid, channel, guild, member, system, seen, timestamp FROM reminders WHERE {memberOrSystem} {showSeen}) r2
+    WHERE r1.mid = r2.mid
+    RETURNING r2.*
+)
+SELECT * FROM x ORDER BY timestamp DESC";
+            return conn.QueryStreamAsync<PKReminder>(query, queryParameter);
         }
 
         public struct MemberListQueryOptions
